@@ -1,0 +1,156 @@
+<!<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>GeoLocation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtmlQHURjWk0rhsXerHx4rTbkppG7_T60&callback=initialize&libraries=drawing&libraries=places"></script>
+
+    <script src="location.js"></script>
+
+
+    <style>
+        .slidecontainer {
+            width: 100%;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 15px;
+            border-radius: 5px;
+            background: #d3d3d3;
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+        }
+
+        .slider:hover {
+            opacity: 1;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="inputDetails">
+        <!-- <button onclick="getDeviceLocation()">Get Location</button> -->
+        <button onclick="drawFence()">Geo Fence</button>
+        <br />
+        <div>
+            <label>enter location </label>
+            <input type="text" id="txtLocationId" />
+        </div>
+        <div class="slidecontainer">
+            <input id="rangeControl" type="range" min="0.1" max="50" />
+        </div>
+        <div >
+            <label>Enter Distance</label>
+            <input type="text" id="distanceFactor" onchange="updateDistanceFactor()"/>
+            <button id="increment" onclick="increase()" >+</button>
+            <button id="decrement" onclick="decrease()">-</button>
+        </div>
+        <label>Latitude</label>
+        <input type="text" id="lat" />
+
+        <br />
+        <label>Longiture</label>
+        <input type="text" id="lng" />
+    </div>
+    <div id="mapId" style="width: 100%; height: 100%; background-color: gold;"></div>
+
+</body>
+<script>
+    var map, infoWindow,drawCircles;
+
+    function initialize() {
+
+        var sliderDetails = document.getElementById('rangeControl');
+        sliderDetails.value =0;
+        document.getElementById('distanceFactor').value =0; 
+        var curentPostion = { lat: 17.3847140, lng: 78.491684 };
+
+        //Creating map on the #mapId div
+        map = new google.maps.Map(document.getElementById('mapId'), {
+            center: curentPostion,
+            zoom: 17
+        });
+
+        getDeviceLocation();
+        // //location details in LatLng
+        // var markerLocation ={lat: 17.3847140 , lng: 78.491684 };
+
+        //Creation of marker on google Map
+        //postion: Postion of the marker
+        //map: map on which marker to be displayed
+        //title: Tool tip appearing on mouse hover
+        var marker = new google.maps.Marker({
+            position: curentPostion,
+            map: map,
+            title: "Hello to this location"
+        });
+
+        //Binding location Auto-Complete
+        var input = document.getElementById('txtLocationId');
+        var searchBox = new google.maps.places.SearchBox(input);
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+        
+        sliderDetails.oninput = ()=>{
+            let distance = document.getElementById('rangeControl').value;
+            drawCircle(distance);
+        };
+        searchBox.addListener('places_changed', () => {
+            var places = searchBox.getPlaces();
+            console.log(places);
+            places.forEach(place => {
+                if (place.geometry) {
+                    let pos = {
+                        lat: place.geometry.location.lat(),
+                        lng: place.geometry.location.lng()
+                    };
+                    map.panTo(pos);
+                    map.setZoom(14);
+                    addMarker(pos, place.formatted_address);
+                }
+
+            });
+
+
+        });
+
+        // //creation of InfoMarker
+        // let infoWindow = new google.maps.InfoWindow({
+        //     content: "Thanks for visiting the location"
+        // });
+
+        // //As the info window will not open automatically
+        // //user needs to provide the details when and where to open the infoWindow
+        // marker.addListener('click', ()=>{
+        //     infoWindow.open(map, marker);
+        // });
+    }
+</script>
+
+</html>
